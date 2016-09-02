@@ -1,0 +1,16 @@
+version: '2'
+services:
+  php-pubsub-kafka:
+    build: .
+    depends_on:
+      - "kafka"
+    volumes:
+      - ./src:/opt/php-pubsub/src
+      - ./examples:/opt/php-pubsub/examples
+  kafka:
+    image: spotify/kafka
+    environment:
+      - ADVERTISED_HOST=HOSTIP
+      - ADVERTISED_PORT=9092
+    ports:
+      - "9092:9092"
