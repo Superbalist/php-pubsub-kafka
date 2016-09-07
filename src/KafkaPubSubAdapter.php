@@ -13,37 +13,18 @@ class KafkaPubSubAdapter implements PubSubAdapterInterface
     protected $producer;
 
     /**
-     * @var \RdKafka\Consumer
+     * @var \RdKafka\KafkaConsumer
      */
     protected $consumer;
 
     /**
-     * @var \RdKafka\TopicConf
-     */
-    protected $topicConfig;
-
-    /**
-     * @var mixed
-     */
-    protected $consumerOffset;
-
-    /**
      * @param \RdKafka\Producer $producer
-     * @param \RdKafka\Consumer $consumer
-     * @param \RdKafka\TopicConf $topicConfig
-     * @param mixed $consumerOffset The offset at which to start consumption
-     *  (RD_KAFKA_OFFSET_BEGINNING, RD_KAFKA_OFFSET_END, RD_KAFKA_OFFSET_STORED)
+     * @param \RdKafka\KafkaConsumer $consumer
      */
-    public function __construct(
-        \RdKafka\Producer $producer,
-        \RdKafka\Consumer $consumer,
-        \RdKafka\TopicConf $topicConfig,
-        $consumerOffset = RD_KAFKA_OFFSET_END
-    ) {
+    public function __construct(\RdKafka\Producer $producer, \RdKafka\KafkaConsumer $consumer)
+    {
         $this->producer = $producer;
         $this->consumer = $consumer;
-        $this->topicConfig = $topicConfig;
-        $this->consumerOffset = $consumerOffset;
     }
 
     /**
@@ -59,43 +40,11 @@ class KafkaPubSubAdapter implements PubSubAdapterInterface
     /**
      * Return the Kafka consumer.
      *
-     * @return \RdKafka\Consumer
+     * @return \RdKafka\KafkaConsumer
      */
     public function getConsumer()
     {
         return $this->consumer;
-    }
-
-    /**
-     * Return the Kafka TopicConfig.
-     *
-     * @return \RdKafka\TopicConf
-     */
-    public function getTopicConfig()
-    {
-        return $this->topicConfig;
-    }
-
-    /**
-     * Return the Kafka consumer offset at which `subscribe()` calls begin consumption.
-     *
-     * @return mixed
-     */
-    public function getConsumerOffset()
-    {
-        return $this->consumerOffset;
-    }
-
-    /**
-     * Set the Kafka consumer offset at which `subscribe()` calls begin consumption.
-     *
-     * This can be one of `RD_KAFKA_OFFSET_BEGINNING`, `RD_KAFKA_OFFSET_END` or `RD_KAFKA_OFFSET_STORED`
-     *
-     * @param mixed $consumerOffset
-     */
-    public function setConsumerOffset($consumerOffset)
-    {
-        $this->consumerOffset = $consumerOffset;
     }
 
     /**
@@ -107,14 +56,12 @@ class KafkaPubSubAdapter implements PubSubAdapterInterface
      */
     public function subscribe($channel, callable $handler)
     {
-        $topic = $this->consumer->newTopic($channel, $this->topicConfig);
-
-        $topic->consumeStart(0, $this->consumerOffset);
+        $this->consumer->subscribe([$channel]);
 
         $isSubscriptionLoopActive = true;
 
         while ($isSubscriptionLoopActive) {
-            $message = $topic->consume(0, 1000);
+            $message = $this->consumer->consume(300);
 
             if ($message === null) {
                 continue;
@@ -126,10 +73,12 @@ class KafkaPubSubAdapter implements PubSubAdapterInterface
 
                     if ($payload === 'unsubscribe') {
                         $isSubscriptionLoopActive = false;
-                        break;
+                    } else {
+                        call_user_func($handler, $payload);
                     }
 
-                    call_user_func($handler, $payload);
+                    $this->consumer->commitAsync($message);
+
                     break;
                 case RD_KAFKA_RESP_ERR__PARTITION_EOF:
                 case RD_KAFKA_RESP_ERR__TIMED_OUT:
@@ -148,7 +97,7 @@ class KafkaPubSubAdapter implements PubSubAdapterInterface
      */
     public function publish($channel, $message)
     {
-        $topic = $this->producer->newTopic($channel, $this->topicConfig);
+        $topic = $this->producer->newTopic($channel);
         $topic->produce(RD_KAFKA_PARTITION_UA, 0, Utils::serializeMessage($message));
     }
 }

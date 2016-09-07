@@ -8,7 +8,7 @@ services:
       - ./src:/opt/php-pubsub/src
       - ./examples:/opt/php-pubsub/examples
   kafka:
-    image: spotify/kafka
+    image: flozano/kafka
     environment:
       - ADVERTISED_HOST=HOSTIP
       - ADVERTISED_PORT=9092
