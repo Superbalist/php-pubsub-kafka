@@ -13,3 +13,9 @@ before_script:
 install:
   - cd /tmp && mkdir librdkafka && cd librdkafka && git clone https://github.com/edenhill/librdkafka.git . && ./configure && make && sudo make install
   - cd /tmp && mkdir php-rdkafka && cd php-rdkafka && git clone https://github.com/arnaud-lb/php-rdkafka.git . && git checkout php7 && ./configure && make && sudo make install echo "extension = rdkafka.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+
+notifications:
+  slack:
+    secure: LCF/2QlcsU0V5HmR5gJx1/SAmoZQ39zxG3jrRVOFE6itPk4au8Aal6b1l6HSlhLYhzyv84pmobMhy/Cjm6lePZyE9QalMcsRzLBQ1oZzF7fVB+ypO3W7dG6V0CnGGtkGO4MsSTwMnQ9X/GEWxNBehcmo0kRnvQPGWtEFSHbAqV+86yq/lpfBW3sXuv3TV6mtCwzfaTkermlMC63i6p3rXwwLgf19kAJ//Gp7d8/eVnrq+CbyGOD6+pAHbCFWxEHr2o6P1SMS8mnPRsgBQ+qCNICWRrmb+8gOUUS5JgnPJSAWLI/n0Q+n8CkJTjIfRK+N352n+CitCRcq+76alT05ogW8CY4mJDp2Qn0nEs5h+6NGGIcwveF3kcXmBpVDz2N2J5zpjzk4mybXX8gilxJ1WnPVGRD0cpJSazmpaNV6Y7lRMM1LqvIiY1LNzFQdp1CJjb0n6MQPaSnUF1w/e2k/UfLh1ZGTDy1US0p7RtY1RibbEFVUbtneEENRTYWoVQt+coBF+DFdsDYX/HoEuTkWQeKGmHBrtSX3UEz7v50QkQkr4jvk151JFi7fqJZLazOTbP59g0WSEggTXfauVw/S14S1Ir2+MA/glAYZXzFneKyM9fKiVbxMFrpJNwyurM5ODE72iDKJ5ejkYZLe9EpTRYbW/1p5/1yOK+s49cqGP2w=
+    on_success: change
+    on_failure: always
