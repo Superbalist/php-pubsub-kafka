@@ -9,8 +9,17 @@ RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         git \
         zlib1g-dev \
-        librdkafka-dev \
         unzip \
+        python \
+        && ( \
+            cd /tmp \
+            && mkdir librdkafka \
+            && cd librdkafka \
+            && git clone https://github.com/edenhill/librdkafka.git . \
+            && ./configure \
+            && make \
+            && make install \
+        ) \
     && rm -r /var/lib/apt/lists/*
 
 # PHP Extensions

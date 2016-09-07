@@ -8,10 +8,6 @@ use Superbalist\PubSub\Kafka\KafkaPubSubAdapter;
 use Tests\Mocks\MockKafkaErrorMessage;
 
 if (!extension_loaded('rdkafka')) {
-    define('RD_KAFKA_OFFSET_BEGINNING', 0);
-    define('RD_KAFKA_OFFSET_END', 1);
-    define('RD_KAFKA_OFFSET_STORED', 2);
-
     define('RD_KAFKA_PARTITION_UA', 0);
 
     define('RD_KAFKA_RESP_ERR_NO_ERROR', 0);
@@ -24,95 +20,44 @@ class KafkaPubSubAdapterTest extends TestCase
     public function testGetProducer()
     {
         $producer = Mockery::mock(\RdKafka\Producer::class);
-        $consumer = Mockery::mock(\RdKafka\Consumer::class);
-        $topicConfig = Mockery::mock(\RdKafka\TopicConf::class);
-        $adapter = new KafkaPubSubAdapter($producer, $consumer, $topicConfig);
+        $consumer = Mockery::mock(\RdKafka\KafkaConsumer::class);
+        $adapter = new KafkaPubSubAdapter($producer, $consumer);
         $this->assertSame($producer, $adapter->getProducer());
     }
 
     public function testGetConsumer()
     {
         $producer = Mockery::mock(\RdKafka\Producer::class);
-        $consumer = Mockery::mock(\RdKafka\Consumer::class);
-        $topicConfig = Mockery::mock(\RdKafka\TopicConf::class);
-        $adapter = new KafkaPubSubAdapter($producer, $consumer, $topicConfig);
+        $consumer = Mockery::mock(\RdKafka\KafkaConsumer::class);
+        $adapter = new KafkaPubSubAdapter($producer, $consumer);
         $this->assertSame($consumer, $adapter->getConsumer());
-    }
-
-    public function testGetTopicConfig()
-    {
-        $producer = Mockery::mock(\RdKafka\Producer::class);
-        $consumer = Mockery::mock(\RdKafka\Consumer::class);
-        $topicConfig = Mockery::mock(\RdKafka\TopicConf::class);
-        $adapter = new KafkaPubSubAdapter($producer, $consumer, $topicConfig);
-        $this->assertSame($topicConfig, $adapter->getTopicConfig());
-    }
-
-    public function testGetConsumerOffsetDefaultIsEnd()
-    {
-        $producer = Mockery::mock(\RdKafka\Producer::class);
-        $consumer = Mockery::mock(\RdKafka\Consumer::class);
-        $topicConfig = Mockery::mock(\RdKafka\TopicConf::class);
-        $adapter = new KafkaPubSubAdapter($producer, $consumer, $topicConfig);
-        $this->assertEquals(RD_KAFKA_OFFSET_END, $adapter->getConsumerOffset());
-    }
-
-    public function testGetSetConsumerOffset()
-    {
-        $producer = Mockery::mock(\RdKafka\Producer::class);
-        $consumer = Mockery::mock(\RdKafka\Consumer::class);
-        $topicConfig = Mockery::mock(\RdKafka\TopicConf::class);
-        $adapter = new KafkaPubSubAdapter($producer, $consumer, $topicConfig, RD_KAFKA_OFFSET_STORED);
-        $this->assertSame(RD_KAFKA_OFFSET_STORED, $adapter->getConsumerOffset());
-
-        $adapter->setConsumerOffset(RD_KAFKA_OFFSET_BEGINNING);
-        $this->assertEquals(RD_KAFKA_OFFSET_BEGINNING, $adapter->getConsumerOffset());
     }
 
     public function testSubscribeWithNullMessage()
     {
         $producer = Mockery::mock(\RdKafka\Producer::class);
 
-        $topic = Mockery::mock(\RdKafka\Topic::class);
-        $topic->shouldReceive('consumeStart')
-            ->withArgs([
-                0,
-                RD_KAFKA_OFFSET_END
-            ])
-            ->once();
+        $consumer = Mockery::mock(\RdKafka\KafkaConsumer::class);
 
-        $topic->shouldReceive('consume')
-            ->withArgs([
-                0,
-                1000
-            ])
-            ->andReturnNull()
+        $consumer->shouldReceive('subscribe')
+            ->with(['channel_name'])
             ->once();
 
         // we need this to kill the infinite loop so the test can finish
         $unsubscribeMessage = new \stdClass();
         $unsubscribeMessage->err = RD_KAFKA_RESP_ERR_NO_ERROR;
         $unsubscribeMessage->payload = 'unsubscribe';
-        $topic->shouldReceive('consume')
-            ->withArgs([
-                0,
-                1000
-            ])
-            ->andReturn($unsubscribeMessage)
+
+        $consumer->shouldReceive('consume')
+            ->with(300)
+            ->once()
+            ->andReturn($unsubscribeMessage);
+
+        $consumer->shouldReceive('commitAsync')
+            ->with($unsubscribeMessage)
             ->once();
 
-        $topicConfig = Mockery::mock(\RdKafka\TopicConf::class);
-
-        $consumer = Mockery::mock(\RdKafka\Consumer::class);
-        $consumer->shouldReceive('newTopic')
-            ->withArgs([
-                'channel_name',
-                $topicConfig
-            ])
-            ->once()
-            ->andReturn($topic);
-
-        $adapter = new KafkaPubSubAdapter($producer, $consumer, $topicConfig);
+        $adapter = new KafkaPubSubAdapter($producer, $consumer);
 
         $handler1 = Mockery::mock(\stdClass::class);
         $handler1->shouldNotReceive('handle');
@@ -124,49 +69,39 @@ class KafkaPubSubAdapterTest extends TestCase
     {
         $producer = Mockery::mock(\RdKafka\Producer::class);
 
-        $topic = Mockery::mock(\RdKafka\Topic::class);
-        $topic->shouldReceive('consumeStart')
-            ->withArgs([
-                0,
-                RD_KAFKA_OFFSET_END
-            ])
+        $consumer = Mockery::mock(\RdKafka\KafkaConsumer::class);
+
+        $consumer->shouldReceive('subscribe')
+            ->with(['channel_name'])
             ->once();
 
         $message = new \stdClass();
         $message->err = RD_KAFKA_RESP_ERR__PARTITION_EOF;
         $message->payload = null;
-        $topic->shouldReceive('consume')
-            ->withArgs([
-                0,
-                1000
-            ])
-            ->andReturn($message)
-            ->once();
+
+        $consumer->shouldReceive('consume')
+            ->with(300)
+            ->once()
+            ->andReturn($message);
+
+        $consumer->shouldNotReceive('commitAsnyc')
+            ->with($message);
 
         // we need this to kill the infinite loop so the test can finish
         $unsubscribeMessage = new \stdClass();
         $unsubscribeMessage->err = RD_KAFKA_RESP_ERR_NO_ERROR;
         $unsubscribeMessage->payload = 'unsubscribe';
-        $topic->shouldReceive('consume')
-            ->withArgs([
-                0,
-                1000
-            ])
-            ->andReturn($unsubscribeMessage)
+
+        $consumer->shouldReceive('consume')
+            ->with(300)
+            ->once()
+            ->andReturn($unsubscribeMessage);
+
+        $consumer->shouldReceive('commitAsync')
+            ->with($unsubscribeMessage)
             ->once();
 
-        $topicConfig = Mockery::mock(\RdKafka\TopicConf::class);
-
-        $consumer = Mockery::mock(\RdKafka\Consumer::class);
-        $consumer->shouldReceive('newTopic')
-            ->withArgs([
-                'channel_name',
-                $topicConfig
-            ])
-            ->once()
-            ->andReturn($topic);
-
-        $adapter = new KafkaPubSubAdapter($producer, $consumer, $topicConfig);
+        $adapter = new KafkaPubSubAdapter($producer, $consumer);
 
         $handler1 = Mockery::mock(\stdClass::class);
         $handler1->shouldNotReceive('handle');
@@ -178,49 +113,39 @@ class KafkaPubSubAdapterTest extends TestCase
     {
         $producer = Mockery::mock(\RdKafka\Producer::class);
 
-        $topic = Mockery::mock(\RdKafka\Topic::class);
-        $topic->shouldReceive('consumeStart')
-            ->withArgs([
-                0,
-                RD_KAFKA_OFFSET_END
-            ])
+        $consumer = Mockery::mock(\RdKafka\KafkaConsumer::class);
+
+        $consumer->shouldReceive('subscribe')
+            ->with(['channel_name'])
             ->once();
 
         $message = new \stdClass();
         $message->err = RD_KAFKA_RESP_ERR__TIMED_OUT;
         $message->payload = null;
-        $topic->shouldReceive('consume')
-            ->withArgs([
-                0,
-                1000
-            ])
-            ->andReturn($message)
-            ->once();
+
+        $consumer->shouldReceive('consume')
+            ->with(300)
+            ->once()
+            ->andReturn($message);
+
+        $consumer->shouldNotReceive('commitAsnyc')
+            ->with($message);
 
         // we need this to kill the infinite loop so the test can finish
         $unsubscribeMessage = new \stdClass();
         $unsubscribeMessage->err = RD_KAFKA_RESP_ERR_NO_ERROR;
         $unsubscribeMessage->payload = 'unsubscribe';
-        $topic->shouldReceive('consume')
-            ->withArgs([
-                0,
-                1000
-            ])
-            ->andReturn($unsubscribeMessage)
+
+        $consumer->shouldReceive('consume')
+            ->with(300)
+            ->once()
+            ->andReturn($unsubscribeMessage);
+
+        $consumer->shouldReceive('commitAsync')
+            ->with($unsubscribeMessage)
             ->once();
 
-        $topicConfig = Mockery::mock(\RdKafka\TopicConf::class);
-
-        $consumer = Mockery::mock(\RdKafka\Consumer::class);
-        $consumer->shouldReceive('newTopic')
-            ->withArgs([
-                'channel_name',
-                $topicConfig
-            ])
-            ->once()
-            ->andReturn($topic);
-
-        $adapter = new KafkaPubSubAdapter($producer, $consumer, $topicConfig);
+        $adapter = new KafkaPubSubAdapter($producer, $consumer);
 
         $handler1 = Mockery::mock(\stdClass::class);
         $handler1->shouldNotReceive('handle');
@@ -232,49 +157,40 @@ class KafkaPubSubAdapterTest extends TestCase
     {
         $producer = Mockery::mock(\RdKafka\Producer::class);
 
-        $topic = Mockery::mock(\RdKafka\Topic::class);
-        $topic->shouldReceive('consumeStart')
-            ->withArgs([
-                0,
-                RD_KAFKA_OFFSET_END
-            ])
+        $consumer = Mockery::mock(\RdKafka\KafkaConsumer::class);
+
+        $consumer->shouldReceive('subscribe')
+            ->with(['channel_name'])
             ->once();
 
         $message = new \stdClass();
         $message->err = RD_KAFKA_RESP_ERR_NO_ERROR;
         $message->payload = 'a:1:{s:5:"hello";s:5:"world";}';
-        $topic->shouldReceive('consume')
-            ->withArgs([
-                0,
-                1000
-            ])
-            ->andReturn($message)
+
+        $consumer->shouldReceive('consume')
+            ->with(300)
+            ->once()
+            ->andReturn($message);
+
+        $consumer->shouldReceive('commitAsync')
+            ->with($message)
             ->once();
 
         // we need this to kill the infinite loop so the test can finish
         $unsubscribeMessage = new \stdClass();
         $unsubscribeMessage->err = RD_KAFKA_RESP_ERR_NO_ERROR;
         $unsubscribeMessage->payload = 'unsubscribe';
-        $topic->shouldReceive('consume')
-            ->withArgs([
-                0,
-                1000
-            ])
-            ->andReturn($unsubscribeMessage)
+
+        $consumer->shouldReceive('consume')
+            ->with(300)
+            ->once()
+            ->andReturn($unsubscribeMessage);
+
+        $consumer->shouldReceive('commitAsync')
+            ->with($unsubscribeMessage)
             ->once();
 
-        $topicConfig = Mockery::mock(\RdKafka\TopicConf::class);
-
-        $consumer = Mockery::mock(\RdKafka\Consumer::class);
-        $consumer->shouldReceive('newTopic')
-            ->withArgs([
-                'channel_name',
-                $topicConfig
-            ])
-            ->once()
-            ->andReturn($topic);
-
-        $adapter = new KafkaPubSubAdapter($producer, $consumer, $topicConfig);
+        $adapter = new KafkaPubSubAdapter($producer, $consumer);
 
         $handler1 = Mockery::mock(\stdClass::class);
         $handler1->shouldReceive('handle')
@@ -288,34 +204,23 @@ class KafkaPubSubAdapterTest extends TestCase
     {
         $producer = Mockery::mock(\RdKafka\Producer::class);
 
-        $topic = Mockery::mock(\RdKafka\Topic::class);
-        $topic->shouldReceive('consumeStart')
-            ->withArgs([
-                0,
-                RD_KAFKA_OFFSET_END
-            ])
+        $consumer = Mockery::mock(\RdKafka\KafkaConsumer::class);
+
+        $consumer->shouldReceive('subscribe')
+            ->with(['channel_name'])
             ->once();
 
-        $topic->shouldReceive('consume')
-            ->withArgs([
-                0,
-                1000
-            ])
-            ->andReturn(new MockKafkaErrorMessage())
-            ->once();
+        $message = new MockKafkaErrorMessage();
 
-        $topicConfig = Mockery::mock(\RdKafka\TopicConf::class);
-
-        $consumer = Mockery::mock(\RdKafka\Consumer::class);
-        $consumer->shouldReceive('newTopic')
-            ->withArgs([
-                'channel_name',
-                $topicConfig
-            ])
+        $consumer->shouldReceive('consume')
+            ->with(300)
             ->once()
-            ->andReturn($topic);
+            ->andReturn($message);
 
-        $adapter = new KafkaPubSubAdapter($producer, $consumer, $topicConfig);
+        $consumer->shouldNotReceive('commitAsnyc')
+            ->with($message);
+
+        $adapter = new KafkaPubSubAdapter($producer, $consumer);
 
         $handler1 = Mockery::mock(\stdClass::class);
         $handler1->shouldNotReceive('handle');
@@ -338,20 +243,15 @@ class KafkaPubSubAdapterTest extends TestCase
             ])
             ->once();
 
-        $topicConfig = Mockery::mock(\RdKafka\TopicConf::class);
-
         $producer = Mockery::mock(\RdKafka\Producer::class);
         $producer->shouldReceive('newTopic')
-            ->withArgs([
-                'channel_name',
-                $topicConfig
-            ])
+            ->with('channel_name')
             ->once()
             ->andReturn($topic);
 
-        $consumer = Mockery::mock(\RdKafka\Consumer::class);
+        $consumer = Mockery::mock(\RdKafka\KafkaConsumer::class);
 
-        $adapter = new KafkaPubSubAdapter($producer, $consumer, $topicConfig);
+        $adapter = new KafkaPubSubAdapter($producer, $consumer);
 
         $adapter->publish('channel_name', ['hello' => 'world']);
     }
