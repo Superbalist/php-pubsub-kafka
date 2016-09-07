@@ -4,14 +4,19 @@ php:
   - 5.6
   - 7.0
   - 7.1
-  - hhvm
+  - hvvm
   - nightly
 
 install:
-  - cd /tmp && mkdir librdkafka && cd librdkafka && git clone https://github.com/edenhill/librdkafka.git . && ./configure && make && sudo make install
-  - cd /tmp && mkdir php-rdkafka && cd php-rdkafka && git clone https://github.com/arnaud-lb/php-rdkafka.git . && git checkout php7 && phpize && ./configure && make && sudo make install && echo "extension = rdkafka.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - cd $TRAVIS_BUILD_DIR
+  - ./travis-install.sh
   - travis_retry composer install --no-interaction
+
+matrix:
+    fast_finish: true
+    allow_failures:
+        - php: 7.1
+        - php: hhvm
+        - php: nightly
 
 notifications:
   slack:
