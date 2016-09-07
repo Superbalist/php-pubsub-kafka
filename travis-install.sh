@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 cd /tmp \
     && mkdir librdkafka \
     && cd librdkafka \
@@ -8,7 +10,7 @@ cd /tmp \
     && make \
     && sudo make install
 
-if [[ "$TRAVIS_PHP_VERSION" =~ ^7* ]]
+if [[ "$TRAVIS_PHP_VERSION" =~ ^7.* ]]
 then
     cd /tmp \
         && mkdir php-rdkafka \
