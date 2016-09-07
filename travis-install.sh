@@ -8,7 +8,7 @@ cd /tmp \
     && make \
     && sudo make install
 
-if [ $TRAVIS_PHP_VERSION = "7.0" ]
+if [[ "$TRAVIS_PHP_VERSION" =~ ^7* ]]
 then
     cd /tmp \
         && mkdir php-rdkafka \
