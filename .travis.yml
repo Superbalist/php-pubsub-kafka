@@ -12,7 +12,7 @@ before_script:
 
 install:
   - cd /tmp && mkdir librdkafka && cd librdkafka && git clone https://github.com/edenhill/librdkafka.git . && ./configure && make && sudo make install
-  - cd /tmp && mkdir php-rdkafka && cd php-rdkafka && git clone https://github.com/arnaud-lb/php-rdkafka.git . && git checkout php7 && ./configure && make && sudo make install && echo "extension = rdkafka.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - cd /tmp && mkdir php-rdkafka && cd php-rdkafka && git clone https://github.com/arnaud-lb/php-rdkafka.git . && git checkout php7 && phpize && ./configure && make && sudo make install && echo "extension = rdkafka.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 notifications:
   slack:
