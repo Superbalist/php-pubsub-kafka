@@ -49,7 +49,7 @@ class KafkaPubSubAdapterTest extends TestCase
         $unsubscribeMessage->payload = 'unsubscribe';
 
         $consumer->shouldReceive('consume')
-            ->with(300)
+            ->with(120000)
             ->once()
             ->andReturn($unsubscribeMessage);
 
@@ -80,7 +80,7 @@ class KafkaPubSubAdapterTest extends TestCase
         $message->payload = null;
 
         $consumer->shouldReceive('consume')
-            ->with(300)
+            ->with(120000)
             ->once()
             ->andReturn($message);
 
@@ -93,7 +93,7 @@ class KafkaPubSubAdapterTest extends TestCase
         $unsubscribeMessage->payload = 'unsubscribe';
 
         $consumer->shouldReceive('consume')
-            ->with(300)
+            ->with(120000)
             ->once()
             ->andReturn($unsubscribeMessage);
 
@@ -124,7 +124,7 @@ class KafkaPubSubAdapterTest extends TestCase
         $message->payload = null;
 
         $consumer->shouldReceive('consume')
-            ->with(300)
+            ->with(120000)
             ->once()
             ->andReturn($message);
 
@@ -137,7 +137,7 @@ class KafkaPubSubAdapterTest extends TestCase
         $unsubscribeMessage->payload = 'unsubscribe';
 
         $consumer->shouldReceive('consume')
-            ->with(300)
+            ->with(120000)
             ->once()
             ->andReturn($unsubscribeMessage);
 
@@ -168,7 +168,7 @@ class KafkaPubSubAdapterTest extends TestCase
         $message->payload = 'a:1:{s:5:"hello";s:5:"world";}';
 
         $consumer->shouldReceive('consume')
-            ->with(300)
+            ->with(120000)
             ->once()
             ->andReturn($message);
 
@@ -182,7 +182,7 @@ class KafkaPubSubAdapterTest extends TestCase
         $unsubscribeMessage->payload = 'unsubscribe';
 
         $consumer->shouldReceive('consume')
-            ->with(300)
+            ->with(120000)
             ->once()
             ->andReturn($unsubscribeMessage);
 
@@ -213,7 +213,7 @@ class KafkaPubSubAdapterTest extends TestCase
         $message = new MockKafkaErrorMessage();
 
         $consumer->shouldReceive('consume')
-            ->with(300)
+            ->with(120000)
             ->once()
             ->andReturn($message);
 
