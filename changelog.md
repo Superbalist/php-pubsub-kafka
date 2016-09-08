@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2 - 2016-09-08
+
+* Fix consumer timing out whilst waiting for partition assignment
+
 ## 1.0.1 - 2016-09-07
 
 * Switch to High Level Kafka Consumer
