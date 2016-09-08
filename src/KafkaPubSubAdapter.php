@@ -61,7 +61,7 @@ class KafkaPubSubAdapter implements PubSubAdapterInterface
         $isSubscriptionLoopActive = true;
 
         while ($isSubscriptionLoopActive) {
-            $message = $this->consumer->consume(300);
+            $message = $this->consumer->consume(120*1000);
 
             if ($message === null) {
                 continue;
