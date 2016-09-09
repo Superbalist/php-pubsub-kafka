@@ -20,20 +20,12 @@ A Kafka adapter for the [php-pubsub](https://github.com/Superbalist/php-pubsub) 
 
     **PHP5**
     ```bash
-    $ sudo pecl install channel://pecl.php.net/rdkafka-alpha
+    $ pecl install channel://pecl.php.net/rdkafka-1.0.0
     ```
     
     **PHP7**
     ```bash
-    $ cd /tmp
-    $ mkdir php-rdkafka
-    $ cd php-rdkafka
-    $ git clone https://github.com/arnaud-lb/php-rdkafka.git .
-    $ git checkout php7
-    $ phpize
-    $ ./configure
-    $ make
-    $ make install
+    $ pecl install channel://pecl.php.net/rdkafka-beta
     ```
     
 3. Add the following to your php.ini file to enable the php-rdkafka extension

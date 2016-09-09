@@ -12,17 +12,9 @@ cd /tmp \
 
 if [[ "$TRAVIS_PHP_VERSION" =~ ^7.* ]]
 then
-    cd /tmp \
-        && mkdir php-rdkafka \
-        && cd php-rdkafka \
-        && git clone https://github.com/arnaud-lb/php-rdkafka.git . \
-        && git checkout php7 \
-        && phpize \
-        && ./configure \
-        && make \
-        && sudo make install
+    pecl install channel://pecl.php.net/rdkafka-beta
 else
-    pecl install channel://pecl.php.net/rdkafka-alpha
+    pecl install channel://pecl.php.net/rdkafka-1.0.0
 fi
 
 echo "extension = rdkafka.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
