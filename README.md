@@ -11,10 +11,16 @@ A Kafka adapter for the [php-pubsub](https://github.com/Superbalist/php-pubsub) 
 
 ## Installation
 
-1. Install [librdkafka c library](https://github.com/edenhill/librdkafka) (Debian/Ubuntu)
+1. Install [librdkafka c library](https://github.com/edenhill/librdkafka)
 
     ```bash
-    $ sudo apt-get install librdkafka-dev
+    $ cd /tmp
+    $ mkdir librdkafka
+    $ cd librdkafka
+    $ git clone https://github.com/edenhill/librdkafka.git .
+    $ ./configure
+    $ make
+    $ make install
     ```
 2. Install the [php-rdkafka](https://github.com/arnaud-lb/php-rdkafka) PECL extension
 
