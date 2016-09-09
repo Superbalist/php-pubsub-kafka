@@ -17,7 +17,7 @@ then
     cd /tmp \
         && mkdir php-rdkafka \
         && cd php-rdkafka \
-        && git clone https://github.com/arnaud-lb/php-rdkafka.git \
+        && git clone https://github.com/arnaud-lb/php-rdkafka.git . \
         && phpize \
         && ./configure \
         && make \
