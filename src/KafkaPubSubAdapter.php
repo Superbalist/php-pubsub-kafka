@@ -52,6 +52,7 @@ class KafkaPubSubAdapter implements PubSubAdapterInterface
      *
      * @param string $channel
      * @param callable $handler
+     *
      * @throws \Exception
      */
     public function subscribe($channel, callable $handler)
@@ -61,7 +62,7 @@ class KafkaPubSubAdapter implements PubSubAdapterInterface
         $isSubscriptionLoopActive = true;
 
         while ($isSubscriptionLoopActive) {
-            $message = $this->consumer->consume(120*1000);
+            $message = $this->consumer->consume(120 * 1000);
 
             if ($message === null) {
                 continue;
