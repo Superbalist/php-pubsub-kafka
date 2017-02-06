@@ -239,7 +239,7 @@ class KafkaPubSubAdapterTest extends TestCase
             ->withArgs([
                 RD_KAFKA_PARTITION_UA,
                 0,
-                'a:1:{s:5:"hello";s:5:"world";}'
+                'a:1:{s:5:"hello";s:5:"world";}',
             ])
             ->once();
 
