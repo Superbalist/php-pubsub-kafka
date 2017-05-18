@@ -270,7 +270,7 @@ class KafkaPubSubAdapterTest extends TestCase
             ->withArgs([
                 RD_KAFKA_PARTITION_UA,
                 0,
-                '"lorem ipsum"'
+                '"lorem ipsum"',
             ])
             ->once();
 
@@ -286,7 +286,7 @@ class KafkaPubSubAdapterTest extends TestCase
 
         $messages = [
             ['hello' => 'world'],
-            'lorem ipsum'
+            'lorem ipsum',
         ];
         $adapter->publishBatch('channel_name', $messages);
     }
