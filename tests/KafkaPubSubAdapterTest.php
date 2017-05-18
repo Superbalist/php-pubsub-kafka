@@ -239,7 +239,7 @@ class KafkaPubSubAdapterTest extends TestCase
             ->withArgs([
                 RD_KAFKA_PARTITION_UA,
                 0,
-                '{"hello":"world"}'
+                '{"hello":"world"}',
             ])
             ->once();
 
@@ -263,7 +263,7 @@ class KafkaPubSubAdapterTest extends TestCase
             ->withArgs([
                 RD_KAFKA_PARTITION_UA,
                 0,
-                '{"hello":"world"}'
+                '{"hello":"world"}',
             ])
             ->once();
         $topic->shouldReceive('produce')
