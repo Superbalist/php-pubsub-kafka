@@ -46,12 +46,17 @@ $conf->set('group.id', 'php-pubsub');
 $conf->set('metadata.broker.list', '127.0.0.1');
 $conf->set('enable.auto.commit', 'false');
 $conf->set('offset.store.method', 'broker');
+$conf->set('socket.blocking.max.ms', 50);
 $conf->setDefaultTopicConf($topicConf);
 
 $consumer = new \RdKafka\KafkaConsumer($conf);
 
 // create producer
-$producer = new \RdKafka\Producer();
+$conf = new \RdKafka\Conf();
+$conf->set('socket.blocking.max.ms', 50);
+$conf->set('queue.buffering.max.ms', 20);
+
+$producer = new \RdKafka\Producer($conf);
 $producer->addBrokers('127.0.0.1');
 
 $adapter = new \Superbalist\PubSub\Kafka\KafkaPubSubAdapter($producer, $consumer);
@@ -64,7 +69,7 @@ $adapter->subscribe('my_channel', function ($message) {
 
 // publish messages
 $adapter->publish('my_channel', 'HELLO WORLD');
-$adapter->publish('my_channel', json_encode(['hello' => 'world']));
+$adapter->publish('my_channel', ['hello' => 'world']);
 $adapter->publish('my_channel', 1);
 $adapter->publish('my_channel', false);
 ```
