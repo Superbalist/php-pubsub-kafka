@@ -25,14 +25,8 @@ A Kafka adapter for the [php-pubsub](https://github.com/Superbalist/php-pubsub) 
     ```
 2. Install the [php-rdkafka](https://github.com/arnaud-lb/php-rdkafka) PECL extension
 
-    **PHP5**
     ```bash
-    $ pecl install channel://pecl.php.net/rdkafka-1.0.0
-    ```
-    
-    **PHP7**
-    ```bash
-    $ pecl install channel://pecl.php.net/rdkafka-beta
+    $ pecl install rdkafka
     ```
     
 3. Add the following to your php.ini file to enable the php-rdkafka extension
@@ -45,7 +39,7 @@ A Kafka adapter for the [php-pubsub](https://github.com/Superbalist/php-pubsub) 
 ```php
 // create consumer
 $topicConf = new \RdKafka\TopicConf();
-$topicConf->set('auto.offset.reset', 'smallest');
+$topicConf->set('auto.offset.reset', 'largest');
 
 $conf = new \RdKafka\Conf();
 $conf->set('group.id', 'php-pubsub');
@@ -84,7 +78,7 @@ Run `make up`.
 
 You will start at a `bash` prompt in the `/opt/php-pubsub` directory.
 
-If you need another shell to publish a message to a blocking consumer, you can run `docker-compose run php-pubsub-kafka /bin/bash`
+If you need another shell to publish a message to a blocking consumer, you can run `make shell`
 
 To run the examples:
 ```bash

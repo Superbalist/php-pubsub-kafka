@@ -7,10 +7,26 @@ services:
     volumes:
       - ./src:/opt/php-pubsub/src
       - ./examples:/opt/php-pubsub/examples
-  kafka:
-    image: flozano/kafka
     environment:
-      - ADVERTISED_HOST=HOSTIP
-      - ADVERTISED_PORT=9092
-    ports:
-      - "9092:9092"
+      KAFKA_BROKER: ${HOSTIP}
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    network_mode: host
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    network_mode: host
+    depends_on:
+      - "zookeeper"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: ${HOSTIP}:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${HOSTIP}:9092
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: ${HOSTIP}:9092
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: ${HOSTIP}:2181
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 2
+      CONFLUENT_METRICS_REPORTER_PUBLISH_MS: 1000
+      KAFKA_JMX_PORT: 7999
+      KAFKA_JMX_HOSTNAME: ${HOSTIP}

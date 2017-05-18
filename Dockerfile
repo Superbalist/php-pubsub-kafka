@@ -24,18 +24,7 @@ RUN apt-get update \
 
 # PHP Extensions
 RUN docker-php-ext-install -j$(nproc) zip \
-    && ( \
-        cd /tmp \
-        && mkdir php-rdkafka \
-        && cd php-rdkafka \
-        && git clone https://github.com/arnaud-lb/php-rdkafka.git . \
-        && git checkout php7 \
-        && phpize \
-        && ./configure \
-        && make -j$(nproc) \
-        && make install \
-    ) \
-    && rm -rf /tmp/php-rdkafka \
+    && pecl install rdkafka \
     && docker-php-ext-enable rdkafka
 
 # Composer
