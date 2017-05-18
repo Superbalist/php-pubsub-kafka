@@ -1,6 +1,7 @@
 # Changelog
 
-## 2.0.0 - ?
+## 2.0.0 - 2017-05-18
+
 * Bump up to superbalist/php-pubsub ^2.0
 * Add new publishBatch method to KafkaPubSubAdapter
 
