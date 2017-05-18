@@ -165,7 +165,7 @@ class KafkaPubSubAdapterTest extends TestCase
 
         $message = new \stdClass();
         $message->err = RD_KAFKA_RESP_ERR_NO_ERROR;
-        $message->payload = 'a:1:{s:5:"hello";s:5:"world";}';
+        $message->payload = '{"hello":"world"}';
 
         $consumer->shouldReceive('consume')
             ->with(120000)
@@ -239,7 +239,7 @@ class KafkaPubSubAdapterTest extends TestCase
             ->withArgs([
                 RD_KAFKA_PARTITION_UA,
                 0,
-                'a:1:{s:5:"hello";s:5:"world";}'
+                '{"hello":"world"}'
             ])
             ->once();
 
@@ -254,5 +254,40 @@ class KafkaPubSubAdapterTest extends TestCase
         $adapter = new KafkaPubSubAdapter($producer, $consumer);
 
         $adapter->publish('channel_name', ['hello' => 'world']);
+    }
+
+    public function testPublishBatch()
+    {
+        $topic = Mockery::mock(\RdKafka\Topic::class);
+        $topic->shouldReceive('produce')
+            ->withArgs([
+                RD_KAFKA_PARTITION_UA,
+                0,
+                '{"hello":"world"}'
+            ])
+            ->once();
+        $topic->shouldReceive('produce')
+            ->withArgs([
+                RD_KAFKA_PARTITION_UA,
+                0,
+                '"lorem ipsum"'
+            ])
+            ->once();
+
+        $producer = Mockery::mock(\RdKafka\Producer::class);
+        $producer->shouldReceive('newTopic')
+            ->with('channel_name')
+            ->twice()
+            ->andReturn($topic);
+
+        $consumer = Mockery::mock(\RdKafka\KafkaConsumer::class);
+
+        $adapter = new KafkaPubSubAdapter($producer, $consumer);
+
+        $messages = [
+            ['hello' => 'world'],
+            'lorem ipsum'
+        ];
+        $adapter->publishBatch('channel_name', $messages);
     }
 }

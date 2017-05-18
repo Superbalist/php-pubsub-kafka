@@ -100,4 +100,17 @@ class KafkaPubSubAdapter implements PubSubAdapterInterface
         $topic = $this->producer->newTopic($channel);
         $topic->produce(RD_KAFKA_PARTITION_UA, 0, Utils::serializeMessage($message));
     }
+
+    /**
+     * Publish multiple messages to a channel.
+     *
+     * @param string $channel
+     * @param array $messages
+     */
+    public function publishBatch($channel, array $messages)
+    {
+        foreach ($messages as $message) {
+            $this->publish($channel, $message);
+        }
+    }
 }

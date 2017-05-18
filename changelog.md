@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0 - ?
+* Bump up to superbalist/php-pubsub ^2.0
+* Add new publishBatch method to KafkaPubSubAdapter
+
 ## 1.0.2 - 2016-09-08
 
 * Fix consumer timing out whilst waiting for partition assignment
