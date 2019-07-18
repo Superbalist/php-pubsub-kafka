@@ -256,6 +256,31 @@ class KafkaPubSubAdapterTest extends TestCase
         $adapter->publish('channel_name', ['hello' => 'world']);
     }
 
+    public function testPublishWithKey()
+    {
+        $topic = Mockery::mock(\RdKafka\Topic::class);
+        $topic->shouldReceive('produce')
+            ->withArgs([
+                RD_KAFKA_PARTITION_UA,
+                0,
+                '{"id:1", "hello":"world"}',
+                1
+            ])
+            ->once();
+
+        $producer = Mockery::mock(\RdKafka\Producer::class);
+        $producer->shouldReceive('newTopic')
+            ->with('channel_name')
+            ->once()
+            ->andReturn($topic);
+
+        $consumer = Mockery::mock(\RdKafka\KafkaConsumer::class);
+
+        $adapter = new KafkaPubSubAdapter($producer, $consumer);
+
+        $adapter->publish('channel_name', ['id' => 1, 'hello' => 'world'], 1);
+    }
+
     public function testPublishBatch()
     {
         $topic = Mockery::mock(\RdKafka\Topic::class);
