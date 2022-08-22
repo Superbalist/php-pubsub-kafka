@@ -72,6 +72,7 @@ $adapter->publish('my_channel', 'HELLO WORLD');
 $adapter->publish('my_channel', ['hello' => 'world']);
 $adapter->publish('my_channel', 1);
 $adapter->publish('my_channel', false);
+$adapter->publish('my_channel', ['hello' => 'world'], 1);
 
 // publish multiple messages
 $messages = [

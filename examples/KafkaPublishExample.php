@@ -31,3 +31,5 @@ $adapter = new \Superbalist\PubSub\Kafka\KafkaPubSubAdapter($producer, $consumer
 for ($x = 0; $x < 10; $x++) {
     $adapter->publish('my_channel', $x);
 }
+
+$adapter->publish('my_channel', 'With a key', 1);
