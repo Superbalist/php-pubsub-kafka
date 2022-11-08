@@ -75,7 +75,7 @@ class KafkaPubSubAdapter implements PubSubAdapterInterface
                     if ($payload === 'unsubscribe') {
                         $isSubscriptionLoopActive = false;
                     } else {
-                        call_user_func($handler, $payload);
+                        call_user_func_array($handler, [$payload, $message]);
                     }
 
                     $this->consumer->commitAsync($message);
